@@ -1,6 +1,8 @@
-import Image from "next/image";
-import * as S from "./style";
-import { IconButton } from "../IconButton";
+'use client';
+
+import Image from 'next/image';
+import * as S from './style';
+import { IconButton } from '../IconButton';
 
 export function AppBar({ title, onClose }: { title?: string; onClose?: () => void }) {
   return (

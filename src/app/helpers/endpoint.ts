@@ -13,7 +13,9 @@ export type DetailResponse = ListResponse[number] & {
   }[];
 };
 
-const endpointUrl = "https://front-assignment-api.vercel.app/api";
+// 기본 URL을 환경 변수에서 가져오거나 기본값 사용
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://front-assignment-api.vercel.app';
+const endpointUrl = `${baseUrl}/api`;
 
 export const listUrl = `${endpointUrl}/test/list`;
 

@@ -1,25 +1,32 @@
-"use client";
+import { Suspense } from 'react';
+import HomeContent from '@/app/components/HomeContent';
+import LoadingState from '@/app/components/LoadingState';
+import { ListResponse } from '@/app/helpers/endpoint';
 
-import styled from "styled-components";
-import { Button } from "./components/Button";
-import { AppBar } from "./components/AppBar";
+async function getTests(): Promise<{ data: ListResponse }> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/test/list`);
 
-export default function Home() {
-  return (
-    <div>
-      <main>
-        <AppBar title="테스트" onClose={() => {}} />
-        <Container>
-          <Button>버튼</Button>
-          <Button disabled>버튼</Button>
-          <Button type="outline">버튼</Button>
-        </Container>
-      </main>
-    </div>
-  );
+    if (!response.ok) {
+      throw new Error(`테스트 목록을 가져오지 못했습니다 (${response.status})`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('테스트 목록 불러오기 오류:', error);
+    throw error;
+  }
 }
 
-const Container = styled.div`
-  display: flex;
-  gap: 16px;
-`;
+export default async function Home() {
+  const data = await getTests();
+
+  const tests = Array.isArray(data.data) ? data.data : [];
+
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <HomeContent tests={tests} />
+    </Suspense>
+  );
+}
