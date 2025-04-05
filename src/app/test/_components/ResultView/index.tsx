@@ -62,9 +62,9 @@ export default function ResultView({
       <ResultContainer>
         <ResultIcon>
           {isCorrect ? (
-            <Image src="/images/test-success.png" alt="정답" width={160} height={160} />
+            <Image src="/images/test-success.png" alt="정답" width={160} height={160} priority />
           ) : (
-            <Image src="/images/test-fail.png" alt="오답" width={160} height={160} />
+            <Image src="/images/test-fail.png" alt="오답" width={160} height={160} priority />
           )}
         </ResultIcon>
 
