@@ -1,6 +1,6 @@
 # 영어 표현 학습 체크 테스트 PRD
 
-배포주소: https://recruit-frontend-xwax.vercel.app/
+[웹으로보기](https://recruit-frontend-xwax.vercel.app/) 
 
 ## 1. 개요
 
