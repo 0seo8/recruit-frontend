@@ -45,18 +45,15 @@ export default function TestContent({
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 로컬 스토리지 처리 및 초기 상태 설정
   useEffect(() => {
     const savedProgress = localStorage.getItem(getLocalStorageKey(testId));
     const parsedData = savedProgress ? JSON.parse(savedProgress) : { currentIndex: 0, answers: [] };
 
-    // URL에서 받은 인덱스가 있으면 우선 사용
     if (initialProblemIndex !== null && initialProblemIndex !== undefined) {
       parsedData.currentIndex = initialProblemIndex;
       localStorage.setItem(getLocalStorageKey(testId), JSON.stringify(parsedData));
     }
 
-    // 이미 모든 문제를 풀었다면 결과 페이지로 이동
     if (parsedData.currentIndex >= initialTestData.content.length) {
       router.push(`/test/result/${testId}`);
       return;
@@ -65,7 +62,6 @@ export default function TestContent({
     setCurrentProblemIndex(parsedData.currentIndex);
     setTimeLeft(45);
 
-    // 카운트다운 모달 표시 여부 결정
     if (parsedData.currentIndex === 0 || !parsedData.answers[parsedData.currentIndex - 1]) {
       setShowCountdownModal(true);
       setTestStarted(false);
@@ -74,21 +70,17 @@ export default function TestContent({
       setTestStarted(true);
     }
 
-    // 단어 선택 초기화
     setSelectedWords([]);
   }, [testId, initialTestData.content.length, router, initialProblemIndex]);
 
-  // 현재 문제
   const currentProblem = useMemo(() => {
     return initialTestData.content[currentProblemIndex];
   }, [initialTestData, currentProblemIndex]);
 
-  // useMemo를 사용하여 보기 단어 목록이 문제가 바뀔 때만 섞이도록 함
   const exampleWords = useMemo(() => {
     return [...currentProblem.words, ...currentProblem.distractors].sort(() => Math.random() - 0.5);
   }, [currentProblem]);
 
-  // 카운트다운 모달 타이머
   useEffect(() => {
     if (!showCountdownModal) return;
 
@@ -107,7 +99,6 @@ export default function TestContent({
     return () => clearInterval(timer);
   }, [showCountdownModal]);
 
-  // 문제 타이머
   useEffect(() => {
     if (!testStarted) return;
 
@@ -169,12 +160,9 @@ export default function TestContent({
     );
   }
 
-  // 문제 제출 핸들러
   const handleSubmit = useCallback(() => {
-    // 현재 문제의 결과 저장
     const isCorrect = isAnswerCorrect(selectedWords, currentProblem.words);
 
-    // 로컬 스토리지에 결과 저장
     const storageKey = getLocalStorageKey(testId);
     const savedProgress = localStorage.getItem(storageKey);
     const progressData = savedProgress
@@ -186,18 +174,31 @@ export default function TestContent({
       isCorrect,
     };
 
-    // 다음 문제로 이동 또는 결과 페이지로 이동
     const nextIndex = currentProblemIndex + 1;
     progressData.currentIndex = nextIndex;
 
     localStorage.setItem(storageKey, JSON.stringify(progressData));
 
-    // 결과 페이지로 이동
     router.push(`/test/${testId}/result?problem=${currentProblemIndex}&next=${nextIndex}`);
   }, [currentProblem, currentProblemIndex, selectedWords, testId, router]);
 
   // 사용자 이탈 감지
   useEffect(() => {
+    // 페이지 로드 시 "활성" 상태를 로컬스토리지에 기록
+    const storageKey = getLocalStorageKey(testId);
+    const activeKey = `${storageKey}_active`;
+
+    // 활성 상태 기록 및 현재 문제 인덱스 저장
+    if (testStarted) {
+      localStorage.setItem(
+        activeKey,
+        JSON.stringify({
+          problemIndex: currentProblemIndex,
+          timestamp: Date.now(),
+        }),
+      );
+    }
+
     const handleBeforeUnload = () => {
       // 테스트가 시작되었다면 현재 문제를 오답으로 처리
       if (testStarted) {
@@ -217,15 +218,77 @@ export default function TestContent({
         progressData.currentIndex = currentProblemIndex + 1;
 
         localStorage.setItem(storageKey, JSON.stringify(progressData));
+
+        // 활성 상태 제거
+        localStorage.removeItem(activeKey);
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
 
+    // 컴포넌트 언마운트 시에도 이탈 처리 (리액트 라우팅으로 페이지 변경 시)
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+
+      // 컴포넌트 언마운트로 인한 이탈 시에도 오답 처리
+      if (testStarted) {
+        handleBeforeUnload();
+      }
     };
   }, [testStarted, currentProblemIndex, testId]);
+
+  // 재진입 감지 및 이탈 처리 확인
+  useEffect(() => {
+    const storageKey = getLocalStorageKey(testId);
+    const activeKey = `${storageKey}_active`;
+
+    // 이전 활성 상태 확인
+    const previousActive = localStorage.getItem(activeKey);
+
+    if (previousActive) {
+      try {
+        const activeData = JSON.parse(previousActive);
+        const { problemIndex, timestamp } = activeData;
+
+        // 5분 이상 지났거나, 다른 문제 인덱스라면 이탈로 간주
+        const isExpired = Date.now() - timestamp > 5 * 60 * 1000;
+        const isDifferentProblem = problemIndex !== currentProblemIndex;
+
+        if (isExpired || isDifferentProblem) {
+          // 이탈로 간주하고 해당 문제를 오답 처리
+          const savedProgress = localStorage.getItem(storageKey);
+          const progressData = savedProgress
+            ? JSON.parse(savedProgress)
+            : { currentIndex: 0, answers: [] };
+
+          // 이탈한 문제를 오답 처리
+          progressData.answers[problemIndex] = {
+            selectedWords: [],
+            isCorrect: false,
+          };
+
+          // 다음 문제로 설정 (현재 문제가 이미 다음 문제면 그대로 유지)
+          const nextIndex = problemIndex + 1;
+          if (nextIndex > currentProblemIndex) {
+            progressData.currentIndex = nextIndex;
+            localStorage.setItem(storageKey, JSON.stringify(progressData));
+
+            // 다음 문제로 리다이렉트
+            router.push(`/test/${testId}?next=${nextIndex}`);
+            return;
+          } else {
+            // 이미 다음 문제 이후라면 현재 진행 유지
+            progressData.currentIndex = currentProblemIndex;
+            localStorage.setItem(storageKey, JSON.stringify(progressData));
+          }
+        }
+      } catch (e) {
+        console.error('이전 활성 상태 파싱 오류:', e);
+      }
+    }
+
+    // 여기서는 활성 상태를 설정하지 않습니다 (첫 번째 useEffect에서 이미 설정)
+  }, [testStarted, currentProblemIndex, testId, router]);
 
   // 번갈아 가며 색상 지정하는 함수
   const getProgressItemColor = (index: number) => {
@@ -266,6 +329,7 @@ export default function TestContent({
         isDisabled={isPlayingAudio}
       />
 
+      {/* 타이머 및 힌트 버튼 */}
       <HintButton onClick={handleHintClick} disabled={isPlayingAudio}>
         <Volume2 size={30} color="#ffffff" />
       </HintButton>
