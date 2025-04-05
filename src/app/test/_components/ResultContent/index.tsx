@@ -6,7 +6,6 @@ import { Container, ErrorContainer, ErrorText } from './style';
 
 import { DetailResponse } from '@/app/helpers/endpoint';
 import { Button } from '@/app/components/Button';
-import LoadingState from '@/app/components/LoadingState';
 import ResultView from '@/app/test/_components/ResultView';
 
 interface ResultContentProps {
@@ -77,7 +76,6 @@ export default function ResultContent(props: ResultContentProps) {
   if (isCorrect === null) {
     return (
       <>
-        <LoadingState message="결과를 불러오는 중..." />
         <ResultDataFetcher
           testId={props.testId}
           initialTestData={props.initialTestData}

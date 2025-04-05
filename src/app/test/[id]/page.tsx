@@ -37,7 +37,7 @@ export default async function TestPage({
   const nextIndex = next ? parseInt(next, 10) : null;
 
   return (
-    <Suspense fallback={<LoadingState />}>
+    <Suspense>
       <TestContent initialTestData={testData} testId={testId} initialProblemIndex={nextIndex} />
     </Suspense>
   );

@@ -1,5 +1,6 @@
 import { DetailResponse } from '@/app/helpers/endpoint';
 import ResultContent from '@/app/test/_components/ResultContent';
+import { Suspense } from 'react';
 
 async function getTestData(id: number): Promise<DetailResponse> {
   try {
@@ -36,11 +37,13 @@ export default async function ProblemResultPage({
   const testData = await getTestData(testId);
 
   return (
-    <ResultContent
-      testId={testId}
-      initialTestData={testData}
-      problemIndex={problemIndex}
-      nextIndex={nextIndex}
-    />
+    <Suspense>
+      <ResultContent
+        testId={testId}
+        initialTestData={testData}
+        problemIndex={problemIndex}
+        nextIndex={nextIndex}
+      />
+    </Suspense>
   );
 }
