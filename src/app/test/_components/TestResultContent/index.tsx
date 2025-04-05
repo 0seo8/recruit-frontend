@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { DetailResponse } from '@/app/helpers/endpoint';
@@ -25,6 +25,15 @@ import {
   ErrorText,
 } from './style';
 
+// 이미지 import
+import resultFailImg from '@/app/assets/images/result-fail.png';
+import resultPerfect1Img from '@/app/assets/images/result-perfect-1.png';
+import resultPerfect2Img from '@/app/assets/images/result-perfect-2.png';
+import resultPerfect3Img from '@/app/assets/images/result-perfect-3.png';
+import resultGood1Img from '@/app/assets/images/result-good-1.png';
+import resultGood2Img from '@/app/assets/images/result-good-2.png';
+import resultGood3Img from '@/app/assets/images/result-good-3.png';
+
 interface TestResultContentProps {
   testId: number;
   initialTestData: DetailResponse;
@@ -45,6 +54,46 @@ export default function TestResultContent({ testId, initialTestData }: TestResul
   const [correctCount, setCorrectCount] = useState(0);
   const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const router = useRouter();
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // 사전 최적화된 이미지 경로
+  const allResultImages = useMemo(
+    () => ({
+      fail: resultFailImg,
+      perfect: [resultPerfect1Img, resultPerfect2Img, resultPerfect3Img],
+      good: [resultGood1Img, resultGood2Img, resultGood3Img],
+    }),
+    [],
+  );
+
+  const getResultStatus = () => {
+    const totalProblems = initialTestData.content.length;
+    const wrongCount = totalProblems - correctCount;
+
+    if (wrongCount >= 3) return 'fail';
+    if (correctCount === totalProblems) return 'perfect';
+    return 'good';
+  };
+
+  const getResultImage = () => {
+    const status = getResultStatus();
+
+    if (status === 'fail') {
+      return allResultImages.fail;
+    } else if (status === 'perfect') {
+      const randomIndex = Math.floor(Math.random() * allResultImages.perfect.length);
+      return allResultImages.perfect[randomIndex];
+    } else {
+      const randomIndex = Math.floor(Math.random() * allResultImages.good.length);
+      return allResultImages.good[randomIndex];
+    }
+  };
+
+  // 결과 이미지 경로
+  const resultImageSrc = useMemo(
+    () => getResultImage(),
+    [correctCount, initialTestData.content.length, allResultImages],
+  );
 
   useEffect(() => {
     try {
@@ -81,39 +130,6 @@ export default function TestResultContent({ testId, initialTestData }: TestResul
 
   const handleGoToList = () => {
     router.push('/');
-  };
-
-  const getResultStatus = () => {
-    const totalProblems = initialTestData.content.length;
-    const wrongCount = totalProblems - correctCount;
-
-    if (wrongCount >= 3) return 'fail';
-    if (correctCount === totalProblems) return 'perfect';
-    return 'good';
-  };
-
-  const getResultImage = () => {
-    const status = getResultStatus();
-
-    if (status === 'fail') {
-      return '/images/result-fail.png';
-    } else if (status === 'perfect') {
-      const perfectImages = [
-        '/images/result-perfect-1.png',
-        '/images/result-perfect-2.png',
-        '/images/result-perfect-3.png',
-      ];
-      const randomIndex = Math.floor(Math.random() * perfectImages.length);
-      return perfectImages[randomIndex];
-    } else {
-      const goodImages = [
-        '/images/result-good-1.png',
-        '/images/result-good-2.png',
-        '/images/result-good-3.png',
-      ];
-      const randomIndex = Math.floor(Math.random() * goodImages.length);
-      return goodImages[randomIndex];
-    }
   };
 
   const getResultTitle = () => {
@@ -224,13 +240,25 @@ export default function TestResultContent({ testId, initialTestData }: TestResul
     <Container>
       <ResultSection>
         <ResultImage>
-          <Image src={getResultImage()} alt="결과 이미지" width={180} height={180} priority />
+          <Image
+            src={resultImageSrc}
+            alt="결과 이미지"
+            width={180}
+            height={180}
+            priority
+            onLoadingComplete={() => setImageLoaded(true)}
+            quality={90}
+          />
         </ResultImage>
 
-        <ResultTitle>{getResultTitle()}</ResultTitle>
-        <ResultText>{getResultSubtext()}</ResultText>
-
-        {renderResultBadges()}
+        {/* 이미지가 로드된 후에만 콘텐츠 표시 */}
+        {imageLoaded && (
+          <>
+            <ResultTitle>{getResultTitle()}</ResultTitle>
+            <ResultText>{getResultSubtext()}</ResultText>
+            {renderResultBadges()}
+          </>
+        )}
 
         <ScoreDisplay>
           <ScoreText $status={resultStatus}>

@@ -169,7 +169,6 @@ export const ButtonContainer = styled.div`
   right: 0;
   padding: 1rem;
   background-color: white;
-  box-shadow: 0 -0.125rem 0.625rem rgba(0, 0, 0, 0.05);
 `;
 
 export const ActionButton = styled.button`

@@ -17,7 +17,7 @@ export function AppBar({ title, onClose }: { title?: string; onClose?: () => voi
 function CloseButton({ onClose }: { onClose?: () => void }) {
   return (
     <IconButton onClick={onClose}>
-      <Image src="/svgs/clear.svg" alt="닫기" width={24} height={24} />
+      <Image src="/svgs/clear.svg" alt="닫기" width={24} height={24} priority />
     </IconButton>
   );
 }
