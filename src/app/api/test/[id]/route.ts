@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getDetailUrl } from '@/app/helpers/endpoint';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const id = Number(params.id);
+export async function GET(request, context) {
+  const id = Number(context.params.id);
 
   try {
-    const response = await fetch(getDetailUrl(id));
+    const response = await fetch(getDetailUrl(id), {
+      next: { revalidate: 3600 },
+    });
 
     if (!response.ok) {
       return NextResponse.json(
@@ -15,7 +17,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+
+    const headers = new Headers();
+    headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+
+    return NextResponse.json(data, {
+      headers,
+    });
   } catch (error) {
     console.error(`Error fetching test detail for ID ${id}:`, error);
     return NextResponse.json(

@@ -21,10 +21,9 @@ async function getTestData(id: number): Promise<DetailResponse> {
   }
 }
 
-export default async function TestResultPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default async function TestResultPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const testId = parseInt(id, 10);
-
   const testData = await getTestData(testId);
 
   return (

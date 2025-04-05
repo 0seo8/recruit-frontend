@@ -23,11 +23,11 @@ export default async function ProblemResultPage({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { problem?: string; next?: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ problem?: string; next?: string }>;
 }) {
-  const { id } = params;
-  const { problem, next } = searchParams;
+  const { id } = await params;
+  const { problem, next } = await searchParams;
 
   const testId = parseInt(id, 10);
   const problemIndex = problem ? parseInt(problem, 10) : 0;

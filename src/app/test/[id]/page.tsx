@@ -21,8 +21,8 @@ async function getTestData(id: number): Promise<DetailResponse> {
   }
 }
 
-export default async function TestPage({ params }: { params: { id: string } }) {
-  const { id } = await params;
+export default async function TestPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params; // `await`로 Promise 해소
   const testId = Number(id);
   const testData = await getTestData(testId);
 
