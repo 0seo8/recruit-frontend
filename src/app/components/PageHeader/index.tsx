@@ -1,19 +1,24 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { AppBar } from '@/app/components/AppBar';
 
 export default function PageHeader() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  // 경로에 따른 타이틀 결정
   let title = '테스트 목록';
+  let handleClose;
 
   if (pathname.includes('/test/result/')) {
     title = '테스트 결과';
+    handleClose = () => router.push('/');
   } else if (pathname.includes('/test/')) {
     title = '테스트';
+    handleClose = () => {
+      router.push('/');
+    };
   }
 
-  return <AppBar title={title} />;
+  return <AppBar title={title} onClose={handleClose} />;
 }
