@@ -64,7 +64,17 @@ export default function TestContent({ testId, initialTestData }: TestContentProp
 
       // 저장된 인덱스로 설정
       setCurrentProblemIndex(currentIndex);
-      setShowCountdownModal(true); // 재진입시 카운트다운 모달 표시
+
+      // 이탈 후 재진입 시 첫 문제인 경우에만 카운트다운 모달 표시
+      if (currentIndex === 0 || !parsedData.answers[currentIndex - 1]) {
+        setShowCountdownModal(true);
+      } else {
+        setShowCountdownModal(false);
+        setTestStarted(true);
+      }
+    } else {
+      // 진행 상태가 없는 경우는 첫 시작이므로 카운트다운 모달 표시
+      setShowCountdownModal(true);
     }
   }, [testId, initialTestData.content.length, router]);
 
@@ -95,7 +105,7 @@ export default function TestContent({ testId, initialTestData }: TestContentProp
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleSubmit(); // 시간이 다 되면 자동 제출
+          handleSubmit();
           return 0;
         }
         return prev - 1;
@@ -103,7 +113,7 @@ export default function TestContent({ testId, initialTestData }: TestContentProp
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [testStarted]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [testStarted]);
 
   // 단어 선택 핸들러
   const handleWordClick = useCallback(
