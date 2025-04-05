@@ -227,24 +227,34 @@ export default function TestContent({
     };
   }, [testStarted, currentProblemIndex, testId]);
 
+  // 번갈아 가며 색상 지정하는 함수
+  const getProgressItemColor = (index: number) => {
+    // 녹색 -> 빨강 -> 회색 순서로 번갈아가며 색상 표시
+    const colorPattern = ['#59dc94', '#ff414d', '#8C8E91'];
+    return colorPattern[index % 3];
+  };
+
   return (
     <Container>
       <CountdownModal isVisible={showCountdownModal} count={countdownValue} />
 
       <TestHeader>
+        <ProgressBar>
+          {initialTestData.content.map((_, index) => {
+            const isFilled = index <= currentProblemIndex;
+            return (
+              <ProgressItem
+                key={index}
+                $filled={isFilled}
+                $color={isFilled ? getProgressItemColor(index) : '#646962'}
+              />
+            );
+          })}
+        </ProgressBar>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <div></div>
           <ProgressText>{`${currentProblemIndex + 1}/${initialTestData.content.length}`}</ProgressText>
         </div>
-        <ProgressBar>
-          {initialTestData.content.map((_, index) => (
-            <ProgressItem
-              key={index}
-              $filled={index <= currentProblemIndex}
-              $color={index <= currentProblemIndex ? '#4A90E2' : '#e0e0e0'}
-            />
-          ))}
-        </ProgressBar>
       </TestHeader>
 
       <ProblemTitle>{currentProblem.answerKr}</ProblemTitle>
@@ -256,7 +266,6 @@ export default function TestContent({
         isDisabled={isPlayingAudio}
       />
 
-      {/* 타이머 및 힌트 버튼 */}
       <HintButton onClick={handleHintClick} disabled={isPlayingAudio}>
         <Volume2 size={30} color="#ffffff" />
       </HintButton>

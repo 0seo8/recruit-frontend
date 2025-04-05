@@ -1,16 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import * as S from './style';
+import { Header, Left, Center, Right } from './style';
 import { IconButton } from '../IconButton';
 
 export function AppBar({ title, onClose }: { title?: string; onClose?: () => void }) {
   return (
-    <S.Header>
-      <S.Left />
-      <S.Center>{title}</S.Center>
-      <S.Right>{onClose && <CloseButton onClose={onClose} />}</S.Right>
-    </S.Header>
+    <Header>
+      <Left />
+      <Center>{title}</Center>
+      <Right>{onClose && <CloseButton onClose={onClose} />}</Right>
+    </Header>
   );
 }
 

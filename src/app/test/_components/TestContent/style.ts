@@ -17,17 +17,32 @@ export const TestHeader = styled.div`
 
 export const ProgressBar = styled.div`
   height: 0.25rem;
-  background-color: #e0e0e0;
   width: 100%;
   position: relative;
   margin-bottom: 0.75rem;
   display: flex;
+  gap: 0.25rem;
+  background-color: transparent;
 `;
 
-export const ProgressItem = styled.div<{ $filled: boolean; $color: string }>`
+export const ProgressItem = styled.div<{
+  $filled: boolean;
+  $color?: string;
+  $isCorrect?: boolean | null;
+}>`
   flex: 1;
   height: 100%;
-  background-color: ${props => props.$color};
+  border-radius: 0.125rem;
+  background-color: ${props => {
+    if (props.$color) return props.$color;
+
+    if (!props.$filled) return '#646962'; // 비활성화 컬러
+
+    if (props.$isCorrect === true) return '#59dc94'; // 성공 컬러
+    if (props.$isCorrect === false) return '#ff414d'; // 실패 컬러
+
+    return '#646962'; // 기본 컬러
+  }};
   transition: background-color 0.3s ease;
 `;
 
