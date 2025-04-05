@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import TestContent from '@/app/test/_components/TestContent';
-import LoadingState from '@/app/components/LoadingState';
 import { DetailResponse } from '@/app/helpers/endpoint';
 
 async function getTestData(id: number): Promise<DetailResponse> {
