@@ -21,14 +21,24 @@ async function getTestData(id: number): Promise<DetailResponse> {
   }
 }
 
-export default async function TestPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params; // `await`로 Promise 해소
+export default async function TestPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { id } = await params;
   const testId = Number(id);
   const testData = await getTestData(testId);
 
+  // URL의 next 파라미터 활용
+  const { next } = await searchParams;
+  const nextIndex = next ? parseInt(next, 10) : null;
+
   return (
     <Suspense fallback={<LoadingState />}>
-      <TestContent initialTestData={testData} testId={testId} />
+      <TestContent initialTestData={testData} testId={testId} initialProblemIndex={nextIndex} />
     </Suspense>
   );
 }

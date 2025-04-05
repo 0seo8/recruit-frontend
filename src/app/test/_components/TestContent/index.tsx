@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { DetailResponse } from '@/app/helpers/endpoint';
 import { CountdownModal } from '@/app/test/_components/CountdownModal';
@@ -24,14 +25,18 @@ import { useRouter } from 'next/navigation';
 interface TestContentProps {
   testId: number;
   initialTestData: DetailResponse;
+  initialProblemIndex?: number | null;
 }
 
-// 로컬 스토리지 키 생성
 const getLocalStorageKey = (testId: number) => `test_progress_${testId}`;
 
-export default function TestContent({ testId, initialTestData }: TestContentProps) {
+export default function TestContent({
+  testId,
+  initialTestData,
+  initialProblemIndex,
+}: TestContentProps) {
   const router = useRouter();
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(initialProblemIndex || 0);
   const [showCountdownModal, setShowCountdownModal] = useState(true);
   const [countdownValue, setCountdownValue] = useState(3);
   const [timeLeft, setTimeLeft] = useState(45);
@@ -40,43 +45,48 @@ export default function TestContent({ testId, initialTestData }: TestContentProp
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // 로컬 스토리지 처리 및 초기 상태 설정
+  useEffect(() => {
+    const savedProgress = localStorage.getItem(getLocalStorageKey(testId));
+    const parsedData = savedProgress ? JSON.parse(savedProgress) : { currentIndex: 0, answers: [] };
+
+    // URL에서 받은 인덱스가 있으면 우선 사용
+    if (initialProblemIndex !== null && initialProblemIndex !== undefined) {
+      parsedData.currentIndex = initialProblemIndex;
+      localStorage.setItem(getLocalStorageKey(testId), JSON.stringify(parsedData));
+    }
+
+    // 이미 모든 문제를 풀었다면 결과 페이지로 이동
+    if (parsedData.currentIndex >= initialTestData.content.length) {
+      router.push(`/test/result/${testId}`);
+      return;
+    }
+
+    setCurrentProblemIndex(parsedData.currentIndex);
+    setTimeLeft(45);
+
+    // 카운트다운 모달 표시 여부 결정
+    if (parsedData.currentIndex === 0 || !parsedData.answers[parsedData.currentIndex - 1]) {
+      setShowCountdownModal(true);
+      setTestStarted(false);
+    } else {
+      setShowCountdownModal(false);
+      setTestStarted(true);
+    }
+
+    // 단어 선택 초기화
+    setSelectedWords([]);
+  }, [testId, initialTestData.content.length, router, initialProblemIndex]);
+
   // 현재 문제
-  const currentProblem = initialTestData.content[currentProblemIndex];
+  const currentProblem = useMemo(() => {
+    return initialTestData.content[currentProblemIndex];
+  }, [initialTestData, currentProblemIndex]);
 
   // useMemo를 사용하여 보기 단어 목록이 문제가 바뀔 때만 섞이도록 함
   const exampleWords = useMemo(() => {
     return [...currentProblem.words, ...currentProblem.distractors].sort(() => Math.random() - 0.5);
   }, [currentProblem]);
-
-  // 로컬 스토리지에서 진행 상태 로드
-  useEffect(() => {
-    const savedProgress = localStorage.getItem(getLocalStorageKey(testId));
-
-    if (savedProgress) {
-      const parsedData = JSON.parse(savedProgress);
-      const currentIndex = parsedData.currentIndex;
-
-      // 이미 모든 문제를 풀었다면 결과 페이지로 이동
-      if (currentIndex >= initialTestData.content.length) {
-        router.push(`/test/result/${testId}`);
-        return;
-      }
-
-      // 저장된 인덱스로 설정
-      setCurrentProblemIndex(currentIndex);
-
-      // 이탈 후 재진입 시 첫 문제인 경우에만 카운트다운 모달 표시
-      if (currentIndex === 0 || !parsedData.answers[currentIndex - 1]) {
-        setShowCountdownModal(true);
-      } else {
-        setShowCountdownModal(false);
-        setTestStarted(true);
-      }
-    } else {
-      // 진행 상태가 없는 경우는 첫 시작이므로 카운트다운 모달 표시
-      setShowCountdownModal(true);
-    }
-  }, [testId, initialTestData.content.length, router]);
 
   // 카운트다운 모달 타이머
   useEffect(() => {

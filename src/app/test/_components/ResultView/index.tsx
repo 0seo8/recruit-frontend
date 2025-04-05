@@ -40,7 +40,7 @@ export default function ResultView({
     if (isLastProblem) {
       router.push(`/test/result/${testId}`);
     } else {
-      router.push(`/test/${testId}`);
+      router.push(`/test/${testId}?next=${nextIndex}`);
     }
   };
 
