@@ -46,7 +46,8 @@ export const ProgressItem = styled.div<{
 `;
 
 export const ProgressText = styled.div`
-  font-size: 1.125rem;
+  font-size: 0.875rem;
+  color: #64696e;
   font-weight: 600;
   text-align: right;
 `;
