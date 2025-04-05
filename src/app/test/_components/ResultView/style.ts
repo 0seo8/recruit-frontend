@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const Container = styled.div`
   padding: 1rem;
@@ -51,7 +51,7 @@ export const ProgressText = styled.div`
   text-align: right;
 `;
 
-export const ResultContainer = styled.div`
+export const ResultContainer = styled.div<{ $isFlipped: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -59,6 +59,38 @@ export const ResultContainer = styled.div`
   flex: 1;
   padding: 1rem;
   padding-bottom: 5rem; /* 버튼 공간 확보 */
+  perspective: 1000px;
+  cursor: pointer;
+
+  position: relative;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+  transform: ${props => (props.$isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)')};
+`;
+
+const cardSideCss = css`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+`;
+
+export const ResultFront = styled.div`
+  ${cardSideCss}
+  transform: rotateY(0deg);
+`;
+
+export const ResultBack = styled.div`
+  ${cardSideCss}
+  transform: rotateY(180deg);
+  background-color: #f9f9f9;
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
 `;
 
 export const ResultIcon = styled.div`
@@ -76,6 +108,24 @@ export const ColoredText = styled.span<{ $isCorrect: boolean }>`
   color: ${props => (props.$isCorrect ? '#4caf50' : '#e53935')};
 `;
 
+export const AnswerText = styled.p`
+  font-size: 1.25rem;
+  margin: 0.5rem 0;
+  text-align: center;
+  color: #333;
+`;
+
+export const AnswerLabel = styled.span`
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.5rem;
+`;
+
+export const AnswerContent = styled.span<{ $isCorrect?: boolean }>`
+  color: ${props => (props.$isCorrect ? '#4caf50' : '#e53935')};
+  font-weight: 500;
+`;
+
 export const ButtonContainer = styled.div`
   width: 100%;
   max-width: 100%;
@@ -85,6 +135,7 @@ export const ButtonContainer = styled.div`
   right: 0;
   padding: 1rem;
   background-color: white;
+  z-index: 10;
 `;
 
 export const NextButton = styled.button`
