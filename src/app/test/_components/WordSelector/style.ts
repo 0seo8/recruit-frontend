@@ -58,6 +58,33 @@ export const WordChipsContainer = styled.div`
   overflow-y: visible;
 `;
 
+export const SelectedWordChip = styled.button<{ disabled: boolean }>`
+  background-color: white;
+  color: #333333;
+  padding: 0.5rem 0.75rem;
+  border: 0.0625rem solid #e0e0e0;
+  border-radius: 0.75rem;
+  cursor: ${props => (props.disabled ? 'default' : 'pointer')};
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 3rem;
+  max-width: 100%;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0.25rem;
+  box-sizing: border-box;
+  text-align: center;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: ${props => (props.disabled ? 'white' : '#f8f8f8')};
+  }
+`;
+
 export const WordChip = styled.button<{ $selected: boolean; disabled: boolean }>`
   background-color: ${props => (props.$selected ? '#f4f5f7' : 'white')};
   color: ${props => (props.$selected ? '#bbbbbb' : '#333333')};

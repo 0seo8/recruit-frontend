@@ -5,6 +5,7 @@ import {
   AnswerEmptyLine,
   WordChipsContainer,
   WordChip,
+  SelectedWordChip,
   AnswerLinesContainer,
   SelectedWordsOverlay,
 } from '@/app/test/_components/WordSelector/style';
@@ -28,9 +29,9 @@ export const WordSelector = ({
         <AnswerLinesContainer>
           <SelectedWordsOverlay>
             {selectedWords.map((word, index) => (
-              <WordChip key={index} $selected={false} disabled={true} onClick={() => {}}>
+              <SelectedWordChip key={index} disabled={isDisabled} onClick={() => onWordClick(word)}>
                 {word}
-              </WordChip>
+              </SelectedWordChip>
             ))}
           </SelectedWordsOverlay>
           <AnswerEmptyLine />
@@ -46,7 +47,7 @@ export const WordSelector = ({
             key={index}
             onClick={() => onWordClick(word)}
             $selected={selectedWords.includes(word)}
-            disabled={isDisabled || selectedWords.includes(word)}
+            disabled={isDisabled}
           >
             {word}
           </WordChip>
